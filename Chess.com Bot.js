@@ -3666,7 +3666,7 @@ myFunctions.color = function(dat){
     var res1 = response.substring(0, 2);
     var res2 = response.substring(2, 4);
 
-    if(myVars.autoMovePiece == true){
+    if(myVars.autoMove == true){
       myFunctions.movePiece(res1, res2);
     }
 
@@ -3724,6 +3724,7 @@ function parser(e){
     if(e.data.includes('bestmove')){
         console.log(e.data.split(' ')[1]);
         myFunctions.color(e.data.split(' ')[1]);
+        isThinking = false;
     }
 }
 
@@ -3759,6 +3760,7 @@ myFunctions.runChessEngine = function(depth){
     var fen = myFunctions.rescan();
     engine.engine.postMessage(`position fen ${fen} - - 0 25`);
     console.log('updated: ' + `position fen ${fen} - - 0 25`);
+    isThinking = true;
     engine.engine.postMessage(`go depth ${depth}`);
     lastValue = depth;
 }
@@ -3854,16 +3856,50 @@ document.onkeydown = function(e) {
             break;
     }
 };
+
+var loaded = false;
+myFunctions.loadEx = function(){
+    try{
+        var div = document.createElement('div')
+        var content = `<input type="checkbox" id="autoRun" name="autoRun" value="false">
+<label for="autoRun"> Enable auto run</label><br>
+<input type="checkbox" id="autoMove" name="autoMove" value="false">
+<label for="autoMove"> Enable auto move</label><br>`
+        div.innerHTML = content;
+        div.setAttribute('style','background-color:white');
+        $('chess-board')[0].parentElement.parentElement.appendChild(div);
+        loaded = true;
+    } catch (error) {}
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function other(){
+    canGo = false;
+    await sleep(2000);
+    myFunctions.autoRun(lastValue);
+    canGo = true;
+}
+
+var isThinking = false
 var canGo = true;
+var myTurn = false;
 const waitForChessBoard = setInterval(() => {
+    if(loaded) {
+       myVars.autoRun = $('#autoRun')[0].checked;
+       myVars.autoMove = $('#autoMove')[0].checked;
+    } else {
+     myFunctions.loadEx();
+    }
+
+    if($('chess-board')[0].game.getTurn() == $('chess-board')[0].game.getPlayingAs()){myTurn = true;}
+
     if(!engine.engine){
         myFunctions.loadChessEngine();
     }
-    if(myVars.autoRun == true && canGo == true){
-        canGo = false;
-        setTimeout(()=>{
-         myFunctions.autoRun(lastValue);
-         canGo = true;
-        }, 2000);
+    if(myVars.autoRun == true && canGo == true && isThinking == false && myTurn){
+        other();
     }
-}, 1000);
+}, 10);
