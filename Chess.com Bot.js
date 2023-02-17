@@ -16,7 +16,9 @@
 // ==/UserScript==
 var lozzaObjectURL;
 var engine = document.engine = {};
-
+var myVars = document.myVars = {};
+myVars.autoMovePiece = false;
+myVars.autoRun = false;
 var myFunctions = document.myFunctions = {};
 
 (function(A, w) {
@@ -3663,6 +3665,11 @@ myFunctions.color = function(dat){
     response = dat;
     var res1 = response.substring(0, 2);
     var res2 = response.substring(2, 4);
+
+    if(myVars.autoMovePiece == true){
+      myFunctions.movePiece(res1, res2);
+    }
+
     res1 = res1.replace(/^a/, "1")
         .replace(/^b/, "2")
         .replace(/^c/, "3")
@@ -3682,7 +3689,7 @@ myFunctions.color = function(dat){
     $('chess-board')
         .prepend('<div class="highlight square-' + res2 + ' bro" style="background-color: rgb(235, 97, 80); opacity: 0.71;" data-test-element="highlight"></div>')
         .children(':first')
-        .delay(3000)
+        .delay(1800)
         .queue(function() {
         $(this)
             .remove();
@@ -3690,11 +3697,27 @@ myFunctions.color = function(dat){
     $('chess-board')
         .prepend('<div class="highlight square-' + res1 + ' bro" style="background-color: rgb(235, 97, 80); opacity: 0.71;" data-test-element="highlight"></div>')
         .children(':first')
-        .delay(3000)
+        .delay(1800)
         .queue(function() {
         $(this)
             .remove();
     });
+}
+
+myFunctions.movePiece = function(from, to){
+    for (var each in $('chess-board')[0].game.getLegalMoves()){
+        if($('chess-board')[0].game.getLegalMoves()[each].from == from){
+            if($('chess-board')[0].game.getLegalMoves()[each].to == to){
+                var move = $('chess-board')[0].game.getLegalMoves()[each];
+                $('chess-board')[0].game.move({
+                    ...move,
+                    promotion: 'false',
+                    animate: false,
+                    userGenerated: true
+                });
+            }
+        }
+    }
 }
 
 function parser(e){
@@ -3731,11 +3754,19 @@ myFunctions.loadChessEngine = function() {
     console.log('loaded chess engine');
 }
 
+var lastValue = 10;
 myFunctions.runChessEngine = function(depth){
     var fen = myFunctions.rescan();
     engine.engine.postMessage(`position fen ${fen} - - 0 25`);
     console.log('updated: ' + `position fen ${fen} - - 0 25`);
     engine.engine.postMessage(`go depth ${depth}`);
+    lastValue = depth;
+}
+
+myFunctions.autoRun = function(lstValue){
+  if($('chess-board')[0].game.getTurn() == $('chess-board')[0].game.getPlayingAs()){
+    myFunctions.runChessEngine(lstValue);
+  }
 }
 
 document.onkeydown = function(e) {
@@ -3823,9 +3854,16 @@ document.onkeydown = function(e) {
             break;
     }
 };
-
+var canGo = true;
 const waitForChessBoard = setInterval(() => {
     if(!engine.engine){
         myFunctions.loadChessEngine();
+    }
+    if(myVars.autoRun == true && canGo == true){
+        canGo = false;
+        setTimeout(()=>{
+         myFunctions.autoRun(lastValue);
+         canGo = true;
+        }, 2000);
     }
 }, 1000);
