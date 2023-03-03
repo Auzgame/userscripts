@@ -1,0 +1,22 @@
+{
+    "name": "Chess Bot/Cheat",
+    "version": "1.2.1",
+    "description": "Chess.com Bot/Cheat that finds the best move!",
+    "main": "Chess.com Bot.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Auzgame/userscripts.git"
+    },
+    "keywords": [
+        "chess"
+    ],
+    "author": "MrAuzzie",
+    "license": "Copyright 2023 MrAuzzie, All rights reserved.",
+    "bugs": {
+        "url": "https://github.com/Auzgame/userscripts/issues"
+    },
+    "homepage": "https://github.com/Auzgame/userscripts#readme",
+}
