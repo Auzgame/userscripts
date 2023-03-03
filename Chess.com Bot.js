@@ -1,10 +1,15 @@
+// additional copyright/license info:
+//© All Rights Reserved
+// 
+//Chess.com Bot/Cheat © 2023 by MrAuzzie#998142
+//
 // ==UserScript==
 // @name         Chess.com Bot/Cheat
 // @namespace    MrAuzzie
 // @version      1.2.1
 // @description  Chess.com Bot/Cheat that finds the best move!
 // @author       MrAuzzie
-// @license      CC BY-NC-ND 4.0
+// @license      Chess.com Bot/Cheat © 2023 by MrAuzzie#998142, © All Rights Reserved
 // @match       https://www.chess.com/play/*
 // @match       https://www.chess.com/game/*
 // @icon         data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==
