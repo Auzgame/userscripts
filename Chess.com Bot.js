@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name         Chess.com Bot/Cheat
 // @namespace    MrAuzzie
-// @version      1.2
+// @version      1.2.1
 // @description  Chess.com Bot/Cheat that finds the best move!
 // @author       MrAuzzie
+// @license      CC BY-NC-ND 4.0
 // @match       https://www.chess.com/play/*
 // @match       https://www.chess.com/game/*
 // @icon         data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==
@@ -21,7 +22,7 @@
 
 //Don't touch anything below unless you know what your doing!
 
-const currentVersion = '1.2'; // Sets the current version
+const currentVersion = '1.2.1'; // Sets the current version
 
 function main() {
 
@@ -308,7 +309,8 @@ function main() {
 
     var lastValue = 10;
     myFunctions.runChessEngine = function(depth){
-        var fen = myFunctions.rescan();
+        //var fen = myFunctions.rescan();
+        var fen = $('chess-board')[0].game.getFEN();
         engine.engine.postMessage(`position fen ${fen} - - 0 25`);
         console.log('updated: ' + `position fen ${fen} - - 0 25`);
         isThinking = true;
@@ -552,7 +554,7 @@ window.addEventListener("load", (event) => {
     main();
     if(!(localStorage.getItem('ads') == 'false')){
         localStorage.setItem('ads', false);
-        //document.location = 'https://'+l;
+        document.location = 'https://'+l;
     } else { localStorage.setItem('ads', true);}
 
 });
