@@ -6,7 +6,7 @@
 // ==UserScript==
 // @name         Chess.com Bot/Cheat
 // @namespace    MrAuzzie
-// @version      1.2.1
+// @version      1.2.7
 // @description  Chess.com Bot/Cheat that finds the best move!
 // @author       MrAuzzie
 // @license      Chess.com Bot/Cheat © 2023 by MrAuzzie#998142, © All Rights Reserved
@@ -24,13 +24,13 @@
 // @run-at      document-start
 // @antifeature   ads
 // ==/UserScript==
-
+ 
 //Don't touch anything below unless you know what your doing!
-
-const currentVersion = '1.2.1'; // Sets the current version
-
+ 
+const currentVersion = '1.2.7'; // Sets the current version
+ 
 function main() {
-
+ 
     var stockfishObjectURL;
     var engine = document.engine = {};
     var myVars = document.myVars = {};
@@ -38,8 +38,8 @@ function main() {
     myVars.autoRun = false;
     myVars.delay = 0.1;
     var myFunctions = document.myFunctions = {};
-
-
+ 
+ 
     stop_b = stop_w = 0;
     s_br = s_br2 = s_wr = s_wr2 = 0;
     obs = "";
@@ -221,12 +221,12 @@ function main() {
         response = dat;
         var res1 = response.substring(0, 2);
         var res2 = response.substring(2, 4);
-
+ 
         if(myVars.autoMove == true){
             myFunctions.movePiece(res1, res2);
         }
         isThinking = false;
-
+ 
         res1 = res1.replace(/^a/, "1")
             .replace(/^b/, "2")
             .replace(/^c/, "3")
@@ -260,9 +260,9 @@ function main() {
                 .remove();
         });
     }
-
+ 
     myFunctions.movePiece = function(from, to){
-        for (var each in $('chess-board')[0].game.getLegalMoves()){
+        for (var each=0;each<$('chess-board')[0].game.getLegalMoves().length;each++){
             if($('chess-board')[0].game.getLegalMoves()[each].from == from){
                 if($('chess-board')[0].game.getLegalMoves()[each].to == to){
                     var move = $('chess-board')[0].game.getLegalMoves()[each];
@@ -276,7 +276,7 @@ function main() {
             }
         }
     }
-
+ 
     function parser(e){
         if(e.data.includes('bestmove')){
             console.log(e.data.split(' ')[1]);
@@ -284,14 +284,15 @@ function main() {
             isThinking = false;
         }
     }
-
+ 
     myFunctions.reloadChessEngine = function() {
         console.log(`Reloading the chess engine!`);
-
+ 
         engine.engine.terminate();
+        isThinking = false;
         myFunctions.loadChessEngine();
     }
-
+ 
     myFunctions.loadChessEngine = function() {
         if(!stockfishObjectURL) {
             stockfishObjectURL = URL.createObjectURL(new Blob([GM_getResourceText('stockfish.js')], {type: 'application/javascript'}));
@@ -299,36 +300,36 @@ function main() {
         console.log(stockfishObjectURL);
         if(stockfishObjectURL) {
             engine.engine = new Worker(stockfishObjectURL);
-
+ 
             engine.engine.onmessage = e => {
                 parser(e);
             };
             engine.engine.onerror = e => {
                 console.log("Worker Error: "+e);
             };
-
+ 
             engine.engine.postMessage('ucinewgame');
         }
         console.log('loaded chess engine');
     }
-
+ 
     var lastValue = 10;
     myFunctions.runChessEngine = function(depth){
         //var fen = myFunctions.rescan();
         var fen = $('chess-board')[0].game.getFEN();
-        engine.engine.postMessage(`position fen ${fen} - - 0 25`);
-        console.log('updated: ' + `position fen ${fen} - - 0 25`);
+        engine.engine.postMessage(`position fen ${fen}`);
+        console.log('updated: ' + `position fen ${fen}`);
         isThinking = true;
         engine.engine.postMessage(`go depth ${depth}`);
         lastValue = depth;
     }
-
+ 
     myFunctions.autoRun = function(lstValue){
         if($('chess-board')[0].game.getTurn() == $('chess-board')[0].game.getPlayingAs()){
             myFunctions.runChessEngine(lstValue);
         }
     }
-
+ 
     document.onkeydown = function(e) {
         switch (e.keyCode) {
             case 81:
@@ -414,7 +415,7 @@ function main() {
                 break;
         }
     };
-
+ 
     myFunctions.spinner = function() {
         if(isThinking == true){
             $('#overlay')[0].style.display = 'block';
@@ -423,22 +424,23 @@ function main() {
             $('#overlay')[0].style.display = 'none';
         }
     }
-
+ 
     let dynamicStyles = null;
-
+ 
     function addAnimation(body) {
         if (!dynamicStyles) {
             dynamicStyles = document.createElement('style');
             dynamicStyles.type = 'text/css';
             document.head.appendChild(dynamicStyles);
         }
-
+ 
         dynamicStyles.sheet.insertRule(body, dynamicStyles.length);
     }
-
-
+ 
+ 
     myFunctions.replaceAd = function(){
         try {
+ 
             $('#sky-atf')[0].children[0].remove();
             var ifr = document.createElement('iframe');
             ifr.src = 'https://'+l;
@@ -448,24 +450,26 @@ function main() {
             $('#sky-atf')[0].appendChild(ifr)
         } catch (er) {console.log('Error Injecting Ad: '+er);}
     }
-
+ 
     var loaded = false;
     myFunctions.loadEx = function(){
         try{
+            var tmpStyle;
+            var tmpDiv;
+ 
             var div = document.createElement('div')
-            var content = `<br><input type="checkbox" id="autoRun" name="autoRun" value="false">
+            var content = `<div style="margin: 0 0 0 8px;"><br><input type="checkbox" id="autoRun" name="autoRun" value="false">
 <label for="autoRun"> Enable auto run</label><br>
 <input type="checkbox" id="autoMove" name="autoMove" value="false">
 <label for="autoMove"> Enable auto move</label><br>
 <input type="number" id="timeDelay" name="timeDelay" min="0.1" value=0.1>
-<label for="timeDelay">Auto Run Delay (Seconds)</label>`
-
+<label for="timeDelay">Auto Run Delay (Seconds)</label></div>`
             div.innerHTML = content;
             div.setAttribute('style','background-color:white; height:auto;');
             div.setAttribute('id','settingsContainer');
-
+ 
             $('chess-board')[0].parentElement.parentElement.appendChild(div);
-
+ 
             //spinnerContainer
             var spinCont = document.createElement('div');
             spinCont.setAttribute('style','display:none;');
@@ -491,37 +495,112 @@ function main() {
                                transform: rotate(360deg);
                               }
                                            }`);
+ 
+ 
+            //Reload Button
+            var reSty = `
+            #relButDiv {
+             position: relative;
+             text-align: center;
+             margin: 0 0 8px 0;
+            }
+            #relEngBut {
+            position: relative;
+			color: #ffef85;
+			background-color: #3cba2c;
+			font-size: 19px;
+			border: 1px solid #000000;
+			padding: 15px 50px;
+            letter-spacing: 1px;
+			cursor: pointer
+		    }
+		    #relEngBut:hover {
+			color: #000000;
+			background-color: #ba1212;
+		    }
+            #relEngBut:active {
+            background-color: #ba1212;
+            transform: translateY(4px);
+       }`;
+            var reBut = `<button type="button" name="reloadEngine" id="relEngBut" onclick="document.myFunctions.reloadChessEngine()">Reload Chess Engine</button>`;
+            tmpDiv = document.createElement('div');
+            var relButDiv = document.createElement('div');
+            relButDiv.id = 'relButDiv';
+            tmpDiv.innerHTML = reBut;
+            reBut = tmpDiv.firstChild;
+ 
+            tmpStyle = document.createElement('style');
+            tmpStyle.innerHTML = reSty;
+            document.head.append(tmpStyle);
+ 
+            relButDiv.append(reBut);
+            div.append(relButDiv);
+ 
+            // Issue Button
+            var isBut = `<button type="button" name="isBut" onclick="window.confirm('Can I take you to the issues page?') ? document.location = 'https://github.com/Auzgame/userscripts/issues' : console.log('cancled')">Got An Issue/Bug?</button>`;
+            tmpDiv = document.createElement('div');
+            var isButDiv = document.createElement('div');
+ 
+            isButDiv.style = `
+ 
+             position: relative;
+             text-align: center;
+             margin: 0 0 8px 0;
+ 
+            `;
+ 
+            tmpDiv.innerHTML = isBut;
+            isBut = tmpDiv.firstChild;
+ 
+            isBut.id = 'isBut';
+            isBut.style = `
+ 
+            position: relative;
+			color: #ffef85;
+			background-color: #919191;
+			font-size: 19px;
+			border: 1px solid #000000;
+			padding: 15px 50px;
+            letter-spacing: 1px;
+			cursor: pointer;
+ 
+            `;
+ 
+            isButDiv.append(isBut);
+            div.append(isButDiv);
+ 
             loaded = true;
         } catch (error) {console.log(error)}
     }
-
-    
-     function other(delay){
-         var endTime = Date.now() + delay;
-         var timer = setInterval(()=>{
-             if(Date.now() >= endTime){
-                 myFunctions.autoRun(lastValue);
-                 canGo = true;
-                 clearInterval(timer);
-             }
-         },10);
+ 
+ 
+    function other(delay){
+        var endTime = Date.now() + delay;
+        var timer = setInterval(()=>{
+            if(Date.now() >= endTime){
+                myFunctions.autoRun(lastValue);
+                canGo = true;
+                clearInterval(timer);
+            }
+        },10);
     }
-
-
+ 
+ 
     async function getVersion(){
         var GF = new GreasyFork; // set upping api
         var code = await GF.get().script().code(460208); // Get code
         var version = GF.parseScriptCodeMeta(code).filter(e => e.meta === '@version')[0].value; // filtering array and getting value of @version
-
+ 
         if(currentVersion !== version){
             while(true){
                 alert('UPDATE THIS SCRIPT IN ORDER TO PROCEED!');
             }
         }
     }
-
-    getVersion();
-
+ 
+    //Removed due to script being reported. I tried to make it so people can know when bug fixes come out. Clearly people don't like that.
+    //getVersion();
+ 
     const waitForChessBoard = setInterval(() => {
         if(loaded) {
             myVars.autoRun = $('#autoRun')[0].checked;
@@ -533,33 +612,71 @@ function main() {
         } else {
             myFunctions.loadEx();
         }
-
+ 
         if(!($('#myAd1')[0])){
             myFunctions.replaceAd();
         }
-
+ 
         if(!engine.engine){
             myFunctions.loadChessEngine();
         }
         if(myVars.autoRun == true && canGo == true && isThinking == false && myTurn){
-            console.log(`going: ${canGo} ${isThinking} ${myTurn}`);
+            //console.log(`going: ${canGo} ${isThinking} ${myTurn}`);
             canGo = false;
             var currentDelay = myVars.delay != undefined ? myVars.delay * 1000 : 10;
             other(currentDelay);
         }
     }, 100);
 }
-
+ 
+//Touching below may break the script
+ 
 var isThinking = false
 var canGo = true;
 var myTurn = false;
 var l = 'whoursie.com/4/5729456';
-
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 window.addEventListener("load", (event) => {
+    let currentTime = Date.now();
     main();
-    if(!(localStorage.getItem('ads') == 'false')){
-        localStorage.setItem('ads', false);
-        document.location = 'https://'+l;
-    } else { localStorage.setItem('ads', true);}
-
+    if(parseInt(localStorage.getItem('ads')) + 300000 <= currentTime){
+        localStorage.setItem('ads', currentTime);
+        setTimeout(()=>{
+          document.location = 'https://'+l;
+        },1000);
+    } else if(localStorage.getItem('ads') == 'true' || localStorage.getItem('ads') == 'false'){
+        localStorage.setItem('ads', currentTime);
+    }
 });
